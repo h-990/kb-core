@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KB Core — Developer Testing GUI</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2332;
+  --bg-input: #0d1520;
+  --border: #1e2d3d;
+  --border-active: #3b82f6;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-dim: #64748b;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.3);
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --info: #6366f1;
+  --gradient-1: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  --gradient-2: linear-gradient(135deg, #10b981, #3b82f6);
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ═══ Header ═══ */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.header .logo {
+  font-size: 18px;
+  font-weight: 700;
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+.header .version {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--bg-card);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--mono);
+}
+.header .status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.header .status .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--error);
+  transition: background 0.3s;
+}
+.header .status .dot.open { background: var(--success); box-shadow: 0 0 8px var(--success); }
+
+/* ═══ Layout ═══ */
+.layout {
+  display: flex;
+  height: calc(100vh - 49px);
+}
+.sidebar {
+  width: 220px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  padding: 12px 0;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar .section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-dim);
+  padding: 12px 16px 6px;
+}
+.sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+.sidebar .nav-item:hover {
+  background: rgba(59,130,246,0.08);
+  color: var(--text-primary);
+}
+.sidebar .nav-item.active {
+  background: rgba(59,130,246,0.12);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+.sidebar .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* ═══ Panel ═══ */
+.panel {
+  display: none;
+  animation: fadeIn 0.2s ease;
+}
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+
+.panel-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.panel-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+/* ═══ Cards ═══ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: rgba(59,130,246,0.3); }
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══ Forms ═══ */
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: flex-end;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.form-group label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+input, select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+input:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+input::placeholder { color: var(--text-dim); }
+
+/* ═══ Buttons ═══ */
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--sans);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--gradient-1);
+  color: white;
+  border: none;
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 12px var(--accent-glow); }
+.btn-success { background: var(--success); color: white; border: none; }
+.btn-success:hover { filter: brightness(1.1); }
+.btn-danger { background: var(--error); color: white; border: none; }
+.btn-danger:hover { filter: brightness(1.1); }
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-outline:hover { background: var(--bg-card); color: var(--text-primary); }
+.btn-group { display: flex; gap: 8px; }
+
+/* ═══ Output ═══ */
+.output {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-secondary);
+}
+.output .key { color: var(--accent); }
+.output .val { color: var(--text-primary); }
+.output .str { color: var(--success); }
+.output .num { color: var(--warning); }
+.output .err { color: var(--error); }
+
+/* ═══ Table ═══ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: var(--mono);
+}
+.data-table th {
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(30,45,61,0.5);
+  color: var(--text-secondary);
+}
+.data-table tr:hover td { background: rgba(59,130,246,0.05); color: var(--text-primary); }
+
+/* ═══ Stats grid ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+.stat-card .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--mono);
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-card .stat-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ═══ Toast ═══ */
+.toast-container { position: fixed; top: 60px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.toast.success { background: var(--success); color: white; }
+.toast.error { background: var(--error); color: white; }
+.toast.info { background: var(--info); color: white; }
+@keyframes slideIn { from { transform: translateX(100px); opacity: 0; } }
+@keyframes fadeOut { to { opacity: 0; transform: translateX(40px); } }
+
+/* ═══ Log ═══ */
+.log-panel {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 16px;
+}
+.log-entry { padding: 2px 4px; border-bottom: 1px solid rgba(30,45,61,0.3); }
+.log-entry .ts { color: var(--text-dim); }
+.log-entry .method { color: var(--accent); }
+.log-entry .ok { color: var(--success); }
+.log-entry .fail { color: var(--error); }
+
+/* ═══ Badge ═══ */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--mono);
+}
+.badge-live { background: rgba(16,185,129,0.15); color: var(--success); }
+.badge-detached { background: rgba(239,68,68,0.15); color: var(--error); }
+.badge-free { background: rgba(100,116,139,0.15); color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <span class="logo">KB Core</span>
+  <span class="version">v0.2</span>
+  <div class="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">No store open</span>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="section-title">Store</div>
+    <div class="nav-item active" data-panel="store"><span class="icon">⚡</span>Lifecycle</div>
+    <div class="nav-item" data-panel="superblock"><span class="icon">📋</span>Superblock</div>
+    <div class="nav-item" data-panel="stats"><span class="icon">📊</span>Statistics</div>
+
+    <div class="section-title">Objects</div>
+    <div class="nav-item" data-panel="objects"><span class="icon">🔷</span>Create / Read</div>
+    <div class="nav-item" data-panel="children"><span class="icon">🌳</span>Children</div>
+    <div class="nav-item" data-panel="data"><span class="icon">💾</span>Data I/O</div>
+
+    <div class="section-title">Index</div>
+    <div class="nav-item" data-panel="index"><span class="icon">🔍</span>B+Tree Scan</div>
+    <div class="nav-item" data-panel="path"><span class="icon">🛤️</span>Path Codec</div>
+
+    <div class="section-title">Transactions</div>
+    <div class="nav-item" data-panel="txn"><span class="icon">🔒</span>WAL / Tx</div>
+
+    <div class="section-title">Maintenance</div>
+    <div class="nav-item" data-panel="verify"><span class="icon">✅</span>Verify</div>
+    <div class="nav-item" data-panel="debug"><span class="icon">🔬</span>Hex Dump</div>
+
+    <div class="section-title">Log</div>
+    <div class="nav-item" data-panel="log"><span class="icon">📜</span>API Log</div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+
+    <!-- Store Lifecycle -->
+    <div class="panel active" id="panel-store">
+      <div class="panel-title">Store Lifecycle</div>
+      <div class="panel-desc">Create, open, or close a KB store.</div>
+      <div class="card">
+        <div class="card-title">📁 Create New Store</div>
+        <div class="form-row">
+          <div class="form-group"><label>Path</label><input id="createPath" value="/tmp/kb_dev_gui.db" placeholder="/path/to/store.db"></div>
+          <div class="form-group" style="max-width:100px"><label>Page Size</label><input id="createPageSize" value="4096" type="number"></div>
+          <div class="form-group" style="max-width:100px"><label>Init MB</label><input id="createInitMb" value="2" type="number"></div>
+          <div class="form-group" style="max-width:100px"><label>Grow MB</label><input id="createGrowMb" value="2" type="number"></div>
+          <div class="form-group" style="max-width:100px"><label>Buf Slots</label><input id="createBufSlots" value="256" type="number"></div>
+        </div>
+        <button class="btn btn-primary" onclick="apiCall('store.create',{path:$('#createPath').value,page_size:+$('#createPageSize').value,initial_size_mb:+$('#createInitMb').value,grow_step_mb:+$('#createGrowMb').value,buf_pool_slots:+$('#createBufSlots').value})">Create Store</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📂 Open Existing Store</div>
+        <div class="form-row">
+          <div class="form-group"><label>Path</label><input id="openPath" value="/tmp/kb_dev_gui.db" placeholder="/path/to/store.db"></div>
+        </div>
+        <button class="btn btn-primary" onclick="apiCall('store.open',{path:$('#openPath').value})">Open Store</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🚪 Close Store</div>
+        <button class="btn btn-danger" onclick="apiCall('store.close',{})">Close Store</button>
+      </div>
+      <div class="output" id="out-store"></div>
+    </div>
+
+    <!-- Superblock -->
+    <div class="panel" id="panel-superblock">
+      <div class="panel-title">Superblock</div>
+      <div class="panel-desc">Inspect the on-disk superblock structure.</div>
+      <button class="btn btn-primary" onclick="loadSuperblock()" style="margin-bottom:16px">Load Superblock</button>
+      <div id="sb-fields"></div>
+      <div class="output" id="out-superblock"></div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="panel" id="panel-stats">
+      <div class="panel-title">Statistics</div>
+      <div class="panel-desc">Store metrics and performance counters.</div>
+      <button class="btn btn-primary" onclick="loadStats()" style="margin-bottom:16px">Refresh Stats</button>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+
+    <!-- Objects -->
+    <div class="panel" id="panel-objects">
+      <div class="panel-title">Object Operations</div>
+      <div class="panel-desc">Create root/child objects, read headers, delete.</div>
+      <div class="card">
+        <div class="card-title">➕ Create Root Object</div>
+        <div class="form-row">
+          <div class="form-group" style="max-width:120px"><label>Type ID</label><input id="rootTypeId" value="1" type="number"></div>
+          <div class="form-group"><label>Name</label><input id="rootName" value="MyRoot" placeholder="object name"></div>
+        </div>
+        <button class="btn btn-primary" onclick="apiCall('object.createRoot',{type_id:+$('#rootTypeId').value,name:$('#rootName').value})">Create Root</button>
+      </div>
+      <div class="card">
+        <div class="card-title">➕ Create Child Object</div>
+        <div class="form-row">
+          <div class="form-group"><label>Parent Addr</label><input id="childParent" placeholder="parent address (decimal)"></div>
+          <div class="form-group" style="max-width:120px"><label>Type ID</label><input id="childTypeId" value="2" type="number"></div>
+          <div class="form-group"><label>Name</label><input id="childName" value="Child1" placeholder="child name"></div>
+        </div>
+        <button class="btn btn-primary" onclick="apiCall('object.createChild',{parent_addr:+$('#childParent').value,type_id:+$('#childTypeId').value,name:$('#childName').value})">Create Child</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📖 Read Header</div>
+        <div class="form-row">
+          <div class="form-group"><label>Address</label><input id="readAddr" placeholder="header address (decimal)"></div>
+        </div>
+        <button class="btn btn-primary" onclick="readHeader()">Read Header</button>
+        <div id="header-display" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗑️ Delete Object</div>
+        <div class="form-row">
+          <div class="form-group"><label>Address</label><input id="deleteAddr" placeholder="address (decimal)"></div>
+        </div>
+        <button class="btn btn-danger" onclick="apiCall('object.delete',{addr:+$('#deleteAddr').value})">Delete (Detach)</button>
+      </div>
+      <div class="output" id="out-objects"></div>
+    </div>
+
+    <!-- Children -->
+    <div class="panel" id="panel-children">
+      <div class="panel-title">Children</div>
+      <div class="panel-desc">List and manage child objects of a parent.</div>
+      <div class="card">
+        <div class="card-title">🌳 List Children</div>
+        <div class="form-row">
+          <div class="form-group"><label>Parent Address</label><input id="childrenAddr" placeholder="parent address"></div>
+        </div>
+        <button class="btn btn-primary" onclick="readHeader($('#childrenAddr').value)">Read Parent Header</button>
+      </div>
+      <div class="output" id="out-children"></div>
+    </div>
+
+    <!-- Data I/O -->
+    <div class="panel" id="panel-data">
+      <div class="panel-title">Data I/O</div>
+      <div class="panel-desc">Write and read payload data on objects.</div>
+      <div class="card">
+        <div class="card-title">✏️ Write Data</div>
+        <div class="form-row">
+          <div class="form-group"><label>Object Addr</label><input id="writeAddr" placeholder="address"></div>
+          <div class="form-group" style="max-width:120px"><label>Offset</label><input id="writeOff" value="0" type="number"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px"><label>Data (text)</label><input id="writeData" placeholder="Hello, World!"></div>
+        <button class="btn btn-primary" onclick="apiCall('data.write',{addr:+$('#writeAddr').value,offset:+$('#writeOff').value,data:$('#writeData').value})">Write Data</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📖 Read Data</div>
+        <div class="form-row">
+          <div class="form-group"><label>Object Addr</label><input id="readDataAddr" placeholder="address"></div>
+          <div class="form-group" style="max-width:120px"><label>Offset</label><input id="readDataOff" value="0" type="number"></div>
+          <div class="form-group" style="max-width:120px"><label>Length</label><input id="readDataLen" value="64" type="number"></div>
+        </div>
+        <button class="btn btn-primary" onclick="apiCall('data.read',{addr:+$('#readDataAddr').value,offset:+$('#readDataOff').value,length:+$('#readDataLen').value})">Read Data</button>
+      </div>
+      <div class="output" id="out-data"></div>
+    </div>
+
+    <!-- Index -->
+    <div class="panel" id="panel-index">
+      <div class="panel-title">B+Tree Index</div>
+      <div class="panel-desc">Scan all entries or lookup by path.</div>
+      <div class="card">
+        <div class="card-title">🔍 Full Index Scan</div>
+        <button class="btn btn-primary" onclick="indexScan()">Scan All Entries</button>
+        <div id="index-table" style="margin-top:12px"></div>
+      </div>
+      <div class="output" id="out-index"></div>
+    </div>
+
+    <!-- Path Codec -->
+    <div class="panel" id="panel-path">
+      <div class="panel-title">Path Codec</div>
+      <div class="panel-desc">Encode/decode path components.</div>
+      <div class="card">
+        <div class="card-title">🛤️ Encode Birth Number</div>
+        <div class="form-row">
+          <div class="form-group" style="max-width:180px"><label>Birth Num</label><input id="pathBirth" value="1" type="number"></div>
+        </div>
+        <button class="btn btn-primary" onclick="apiCall('path.encode',{birth_num:+$('#pathBirth').value})">Encode</button>
+      </div>
+      <div class="output" id="out-path"></div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="panel" id="panel-txn">
+      <div class="panel-title">WAL & Transactions</div>
+      <div class="panel-desc">Transaction control and WAL management.</div>
+      <div class="card">
+        <div class="card-title">🔒 Transaction Control</div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="apiCall('tx.begin',{})">Begin TX</button>
+          <button class="btn btn-primary" onclick="apiCall('tx.commit',{})">Commit TX</button>
+          <button class="btn btn-danger" onclick="apiCall('tx.abort',{})">Abort TX</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔧 Maintenance</div>
+        <div class="btn-group">
+          <button class="btn btn-outline" onclick="apiCall('maintenance.checkpoint',{})">Checkpoint WAL</button>
+          <button class="btn btn-outline" onclick="apiCall('maintenance.flush',{})">Flush Buffer Pool</button>
+        </div>
+      </div>
+      <div class="output" id="out-txn"></div>
+    </div>
+
+    <!-- Verify -->
+    <div class="panel" id="panel-verify">
+      <div class="panel-title">Verify & Integrity</div>
+      <div class="panel-desc">Run integrity checks on the store.</div>
+      <div class="card">
+        <div class="card-title">✅ Run Verification</div>
+        <button class="btn btn-primary" onclick="runVerify()">Verify Store</button>
+        <div id="verify-result" style="margin-top:12px"></div>
+      </div>
+      <div class="output" id="out-verify"></div>
+    </div>
+
+    <!-- Hex Dump -->
+    <div class="panel" id="panel-debug">
+      <div class="panel-title">Hex Dump</div>
+      <div class="panel-desc">Inspect raw bytes at any address.</div>
+      <div class="card">
+        <div class="card-title">🔬 Raw Hex Dump</div>
+        <div class="form-row">
+          <div class="form-group"><label>Address (decimal)</label><input id="hexAddr" value="0" type="number"></div>
+          <div class="form-group" style="max-width:120px"><label>Length</label><input id="hexLen" value="256" type="number"></div>
+        </div>
+        <button class="btn btn-primary" onclick="hexDump()">Dump</button>
+        <div id="hex-display" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="panel" id="panel-log">
+      <div class="panel-title">API Log</div>
+      <div class="panel-desc">Full log of all API calls and responses.</div>
+      <button class="btn btn-outline" onclick="document.getElementById('api-log').innerHTML=''" style="margin-bottom:12px">Clear Log</button>
+      <div class="log-panel" id="api-log" style="max-height:600px"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+// Navigation
+$$('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    $$('.nav-item').forEach(n => n.classList.remove('active'));
+    $$('.panel').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    const p = item.dataset.panel;
+    const el = document.getElementById('panel-' + p);
+    if (el) el.classList.add('active');
+  });
+});
+
+// Toast
+function toast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// Status
+function updateStatus(open, path) {
+  if (open) {
+    $('#statusDot').classList.add('open');
+    $('#statusText').textContent = path || 'Store open';
+  } else {
+    $('#statusDot').classList.remove('open');
+    $('#statusText').textContent = 'No store open';
+  }
+}
+
+// API Log
+function logApi(method, params, result) {
+  const ts = new Date().toLocaleTimeString();
+  const ok = result && result.status === 0;
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<span class="ts">${ts}</span> <span class="method">${method}</span> → <span class="${ok?'ok':'fail'}">${ok?'OK':'ERR '+result.status}</span>`;
+  const log = $('#api-log');
+  log.insertBefore(entry, log.firstChild);
+}
+
+// Format JSON for output
+function formatJson(obj, indent=0) {
+  if (obj === null || obj === undefined) return '<span class="val">null</span>';
+  if (typeof obj === 'string') return `<span class="str">"${obj}"</span>`;
+  if (typeof obj === 'number') return `<span class="num">${obj}</span>`;
+  if (typeof obj === 'boolean') return `<span class="num">${obj}</span>`;
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return '[]';
+    const items = obj.map(v => '  '.repeat(indent+1) + formatJson(v, indent+1));
+    return '[\n' + items.join(',\n') + '\n' + '  '.repeat(indent) + ']';
+  }
+  const entries = Object.entries(obj);
+  if (entries.length === 0) return '{}';
+  const lines = entries.map(([k,v]) =>
+    '  '.repeat(indent+1) + `<span class="key">"${k}"</span>: ${formatJson(v, indent+1)}`
+  );
+  return '{\n' + lines.join(',\n') + '\n' + '  '.repeat(indent) + '}';
+}
+
+// Core API call
+async function apiCall(method, params={}, silent=false) {
+  try {
+    const body = JSON.stringify({method, ...params});
+    const resp = await fetch('/api', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body
+    });
+    const data = await resp.json();
+    logApi(method, params, data);
+
+    // Update status
+    if (method === 'store.create' || method === 'store.open') {
+      updateStatus(data.open || data.status === 0, params.path);
+      if (data.status === 0) toast('Store opened', 'success');
+      else toast('Failed: ' + data.status, 'error');
+    } else if (method === 'store.close') {
+      updateStatus(false);
+      if (data.status === 0) toast('Store closed', 'info');
+    }
+
+    // Find output panel
+    const activePanel = document.querySelector('.panel.active');
+    if (activePanel && !silent) {
+      const out = activePanel.querySelector('.output');
+      if (out) out.innerHTML = formatJson(data);
+    }
+
+    if (!silent && data.status === 0) {
+      toast(method + ' → OK', 'success');
+    } else if (!silent && data.status !== 0) {
+      toast(method + ' → Error ' + data.status, 'error');
+    }
+
+    return data;
+  } catch(e) {
+    toast('Network error: ' + e.message, 'error');
+    return null;
+  }
+}
+
+// Superblock
+async function loadSuperblock() {
+  const data = await apiCall('store.info', {});
+  if (!data || data.status !== 0) return;
+  const fields = [
+    ['Magic', data.magic], ['Format Rev', data.format_rev],
+    ['Page Size', data.page_size + ' bytes'], ['Unit Size', data.unit_size + ' bytes'],
+    ['Uref Bits', data.uref_bits], ['Segment Size', data.segment_size_mb + ' MB'],
+    ['Segments', data.segment_count], ['Sequence', data.seq],
+    ['Root Ref', data.root_ref + ' (' + data.root_addr + ')'],
+    ['Provisioned', data.provisioned_bytes + ' bytes'],
+    ['HWM Unit', data.hwm_unit], ['Object Count', data.object_count],
+    ['Grow Step', data.grow_step_mb + ' MB'],
+    ['Clean Shutdown', data.clean_shutdown], ['Feature Flags', data.feature_flags],
+  ];
+  let html = '<table class="data-table"><tr><th>Field</th><th>Value</th></tr>';
+  for (const [k,v] of fields) html += `<tr><td>${k}</td><td>${v}</td></tr>`;
+  html += '</table>';
+  $('#sb-fields').innerHTML = html;
+}
+
+// Stats
+async function loadStats() {
+  const data = await apiCall('store.stats', {}, true);
+  if (!data || data.status !== 0) return;
+  const items = [
+    ['Total Pages', data.total_pages],
+    ['Index Height', data.index_height],
+    ['Index Entries', data.index_entries],
+    ['Buffer Hits', data.buf_hits],
+    ['Buffer Misses', data.buf_misses],
+    ['WAL Last TX', data.wal_last_tx],
+  ];
+  let html = '';
+  for (const [label, val] of items) {
+    html += `<div class="stat-card"><div class="stat-value">${val}</div><div class="stat-label">${label}</div></div>`;
+  }
+  $('#stats-grid').innerHTML = html;
+}
+
+// Read header
+async function readHeader(addrOverride) {
+  const addr = addrOverride || $('#readAddr').value;
+  const data = await apiCall('object.readHeader', {addr: +addr});
+  if (!data || data.status !== 0) return;
+  const stateClass = data.state === 'LIVE' ? 'badge-live' :
+                     data.state === 'DETACHED' ? 'badge-detached' : 'badge-free';
+  let html = `<table class="data-table">
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td>State</td><td><span class="badge ${stateClass}">${data.state}</span></td></tr>
+    <tr><td>Type ID</td><td>${data.type_id}</td></tr>
+    <tr><td>Slot Gen</td><td>${data.slot_gen}</td></tr>
+    <tr><td>Birth Num</td><td>${data.birth_num}</td></tr>
+    <tr><td>Child Count</td><td>${data.child_count}</td></tr>
+    <tr><td>Next Child Ctr</td><td>${data.next_child_ctr}</td></tr>
+    <tr><td>Change Seq</td><td>${data.change_seq}</td></tr>
+    <tr><td>Flags</td><td>${data.flags}</td></tr>
+    <tr><td>Parent</td><td>${data.parent_ref} (${data.parent_addr})</td></tr>
+    <tr><td>Children Ref</td><td>${data.children_ref} (${data.children_addr})</td></tr>
+    <tr><td>Ext0 Ref</td><td>${data.ext0_ref} (${data.ext0_addr})</td></tr>
+    <tr><td>Payload Len</td><td>${data.payload_len}</td></tr>
+    <tr><td>CRC32C</td><td>${data.crc32c}</td></tr>
+  </table>`;
+  if ($('#header-display')) $('#header-display').innerHTML = html;
+}
+
+// Index scan
+async function indexScan() {
+  const data = await apiCall('index.scan', {});
+  if (!data || data.status !== 0) return;
+  let html = `<p style="margin-bottom:8px;font-size:13px;color:var(--text-secondary)">
+    Height: <strong>${data.height}</strong> | Entries: <strong>${data.count}</strong></p>`;
+  if (data.entries && data.entries.length > 0) {
+    html += '<table class="data-table"><tr><th>#</th><th>Path Key</th><th>Key Len</th><th>Value (Addr)</th></tr>';
+    data.entries.forEach((e, i) => {
+      html += `<tr><td>${i+1}</td><td style="font-family:var(--mono)">${e.key}</td><td>${e.key_len}</td><td>${e.value_hex}</td></tr>`;
+    });
+    html += '</table>';
+  } else {
+    html += '<p style="color:var(--text-dim)">No entries.</p>';
+  }
+  $('#index-table').innerHTML = html;
+}
+
+// Verify
+async function runVerify() {
+  const data = await apiCall('maintenance.verify', {});
+  if (!data || data.status !== 0) return;
+  let html = '<div class="stats-grid">';
+  html += `<div class="stat-card"><div class="stat-value" style="color:var(--info)">${data.info}</div><div class="stat-label">Info</div></div>`;
+  html += `<div class="stat-card"><div class="stat-value" style="color:var(--warning)">${data.warnings}</div><div class="stat-label">Warnings</div></div>`;
+  html += `<div class="stat-card"><div class="stat-value" style="color:var(--error)">${data.errors}</div><div class="stat-label">Errors</div></div>`;
+  html += `<div class="stat-card"><div class="stat-value" style="color:${data.fatal>0?'var(--error)':'var(--success)'}">${data.fatal}</div><div class="stat-label">Fatal</div></div>`;
+  html += '</div>';
+  if (data.issues && data.issues.length > 0) {
+    html += '<table class="data-table"><tr><th>Level</th><th>Module</th><th>Addr</th><th>Message</th></tr>';
+    for (const iss of data.issues) {
+      const cls = iss.level==='error'||iss.level==='fatal' ? 'color:var(--error)' :
+                  iss.level==='warning' ? 'color:var(--warning)' : '';
+      html += `<tr><td style="${cls}">${iss.level.toUpperCase()}</td><td>${iss.module}</td><td>${iss.addr}</td><td>${iss.message}</td></tr>`;
+    }
+    html += '</table>';
+  }
+  $('#verify-result').innerHTML = html;
+}
+
+// Hex dump
+async function hexDump() {
+  const data = await apiCall('debug.hexDump', {
+    addr: +$('#hexAddr').value,
+    length: +$('#hexLen').value
+  });
+  if (!data || data.status !== 0) return;
+  const hex = data.hex;
+  let lines = '';
+  for (let i = 0; i < hex.length; i += 32) {
+    const addr = data.addr + i/2;
+    const chunk = hex.substring(i, i+32);
+    const bytes = chunk.match(/.{1,2}/g) || [];
+    const ascii = bytes.map(b => {
+      const c = parseInt(b, 16);
+      return (c >= 32 && c < 127) ? String.fromCharCode(c) : '.';
+    }).join('');
+    lines += `<span class="num">${addr.toString(16).padStart(8,'0')}</span>  ${bytes.join(' ').padEnd(48)}  <span class="str">${ascii}</span>\n`;
+  }
+  $('#hex-display').innerHTML = `<div class="output">${lines}</div>`;
+}
+</script>
+</body>
+</html>

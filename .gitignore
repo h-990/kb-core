@@ -1,0 +1,26 @@
+# Build artifacts
+build/
+bin/
+obj/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.dSYM/
+
+# Test and run databases
+*.db
+*.wal
+*.log
+test_*.db
+test_*.wal
+pool.db
+wal.db
+
+# Editor and OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
